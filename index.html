@@ -854,11 +854,51 @@
   })();
 </script>
 
+<!-- Firebase SDK (modular, from CDN) -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js';
+  import { getFirestore, collection, addDoc, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js';
+
+  const app = initializeApp({
+    apiKey: "AIzaSyAnlmGZNwoPS-vBnK1AlHvNsB73q0UAkCU",
+    authDomain: "simpli-fi-id.firebaseapp.com",
+    projectId: "simpli-fi-id",
+    storageBucket: "simpli-fi-id.firebasestorage.app",
+    messagingSenderId: "97006103916",
+    appId: "1:97006103916:web:631c876a6eb263caf81749"
+  });
+
+  const db = getFirestore(app);
+
+  window.handleSignup = async function() {
+    const input = document.getElementById('emailInput');
+    const email = input.value.trim().toLowerCase();
+    if (!email || !email.includes('@') || !email.includes('.')) return;
+
+    const btn = document.querySelector('.signup button');
+    btn.textContent = '...';
+    btn.disabled = true;
+
+    try {
+      await addDoc(collection(db, 'of_subscribers'), {
+        email: email,
+        timestamp: new Date().toISOString(),
+        source: 'opus-familiae-landing'
+      });
+
+      document.getElementById('signupForm').style.display = 'none';
+      document.getElementById('signupSuccess').style.display = 'block';
+    } catch (e) {
+      console.error('Signup failed:', e);
+      btn.textContent = 'RETRY';
+      btn.disabled = false;
+    }
+  };
+</script>
+
 <script>
   // ============================================
   // CONFIGURATION
-  // Update debtAmount manually, or replace this
-  // block with a Supabase/LottOS API fetch.
   // ============================================
 
   const CONFIG = {
@@ -866,78 +906,50 @@
     startingAmount: 502000,
     lastUpdated: "2026-03-20",
 
-    // Quotes array: mix of original lines (type: "original")
-    // and famous quotes (type: "famous")
-    // Aim for ~70% original, ~30% famous
+    // 42 curated quotes. Rotates every hour.
     quotes: [
-      // ---- ORIGINAL LINES (from the journey) ----
-      {
-        text: "The number is the only thing on this page that changes. Everything else stays.",
-        attribution: null,
-        type: "original"
-      },
-      {
-        text: "Most people build companies or raise families. We couldn't pick, so we're doing both at the same time.",
-        attribution: null,
-        type: "original"
-      },
-      {
-        text: "She handles bedtime for four. I handle the whiteboard. We meet back at the kitchen table.",
-        attribution: null,
-        type: "original"
-      },
-      {
-        text: "Both of us grew up in broken homes. We're building what we never had.",
-        attribution: null,
-        type: "original"
-      },
-      {
-        text: "Some months the number barely moves. Some months it falls like a rock. Both kinds of months matter.",
-        attribution: null,
-        type: "original"
-      },
-      {
-        text: "A fire captain and a nurse. Four kids. No investors. No safety net. Just a plan that keeps getting better.",
-        attribution: null,
-        type: "original"
-      },
-      {
-        text: "We gave away our second car to a single mom. A month later we started ten companies. The math has never made sense. It doesn't need to.",
-        attribution: null,
-        type: "original"
-      },
-
-      // ---- FAMOUS QUOTES (chosen, not random) ----
-      {
-        text: "It is not the critic who counts; not the man who points out how the strong man stumbles. The credit belongs to the man who is actually in the arena.",
-        attribution: "Theodore Roosevelt",
-        type: "famous"
-      },
-      {
-        text: "As each has received a gift, use it to serve one another, as good stewards of God's varied grace.",
-        attribution: "1 Peter 4:10, ESV",
-        type: "famous"
-      },
-      {
-        text: "All our dreams can come true, if we have the courage to pursue them.",
-        attribution: "Walt Disney",
-        type: "famous"
-      },
-      {
-        text: "Waste no more time arguing about what a good man should be. Be one.",
-        attribution: "Marcus Aurelius",
-        type: "famous"
-      },
-      {
-        text: "The family is one of nature's masterpieces.",
-        attribution: "George Santayana",
-        type: "famous"
-      },
-      {
-        text: "Do not be anxious about tomorrow, for tomorrow will be anxious for itself. Sufficient for the day is its own trouble.",
-        attribution: "Matthew 6:34, ESV",
-        type: "famous"
-      },
+      { text: "It is not the critic who counts; not the man who points out how the strong man stumbles, or where the doer of deeds could have done them better. The credit belongs to the man who is actually in the arena, whose face is marred by dust and sweat and blood.", attribution: "Theodore Roosevelt" },
+      { text: "All our dreams can come true, if we have the courage to pursue them.", attribution: "Walt Disney" },
+      { text: "Do not lay up for yourselves treasures on earth, where moth and rust destroy and where thieves break in and steal, but lay up for yourselves treasures in heaven.", attribution: "Matthew 6:19\u201320, ESV" },
+      { text: "The price of greatness is responsibility.", attribution: "Winston Churchill" },
+      { text: "I long to accomplish a great and noble task, but it is my chief duty to accomplish small tasks as if they were great and noble.", attribution: "Helen Keller" },
+      { text: "A good man leaves an inheritance to his children\u2019s children.", attribution: "Proverbs 13:22, ESV" },
+      { text: "The only thing we have to fear is fear itself.", attribution: "Franklin D. Roosevelt" },
+      { text: "Waste no more time arguing about what a good man should be. Be one.", attribution: "Marcus Aurelius" },
+      { text: "We make a living by what we get, but we make a life by what we give.", attribution: "Winston Churchill" },
+      { text: "Difficulties strengthen the mind, as labor does the body.", attribution: "Seneca" },
+      { text: "The future belongs to those who believe in the beauty of their dreams.", attribution: "Eleanor Roosevelt" },
+      { text: "It is easier to build strong children than to repair broken men.", attribution: "Frederick Douglass" },
+      { text: "As each has received a gift, use it to serve one another, as good stewards of God\u2019s varied grace.", attribution: "1 Peter 4:10, ESV" },
+      { text: "The best time to plant a tree was twenty years ago. The second best time is now.", attribution: "Chinese Proverb" },
+      { text: "I am only one, but I am one. I cannot do everything, but I can do something. And I will not let what I cannot do interfere with what I can do.", attribution: "Edward Everett Hale" },
+      { text: "No one can make you feel inferior without your consent.", attribution: "Eleanor Roosevelt" },
+      { text: "It is not enough to be busy. The question is: what are we busy about?", attribution: "Henry David Thoreau" },
+      { text: "Courage is not the absence of fear, but rather the judgment that something else is more important than fear.", attribution: "Ambrose Redmoon" },
+      { text: "For I know the plans I have for you, declares the Lord, plans for welfare and not for evil, to give you a future and a hope.", attribution: "Jeremiah 29:11, ESV" },
+      { text: "The greatest glory in living lies not in never falling, but in rising every time we fall.", attribution: "Nelson Mandela" },
+      { text: "Do not go where the path may lead; go instead where there is no path and leave a trail.", attribution: "Ralph Waldo Emerson" },
+      { text: "Whatever you do, work heartily, as for the Lord and not for men.", attribution: "Colossians 3:23, ESV" },
+      { text: "A ship in harbor is safe, but that is not what ships are built for.", attribution: "John A. Shedd" },
+      { text: "Through endurance we conquer.", attribution: "Ernest Shackleton" },
+      { text: "The only limit to our realization of tomorrow will be our doubts of today.", attribution: "Franklin D. Roosevelt" },
+      { text: "He who has a why to live can bear almost any how.", attribution: "Friedrich Nietzsche" },
+      { text: "Compound interest is the eighth wonder of the world. He who understands it, earns it. He who doesn\u2019t, pays it.", attribution: "Albert Einstein" },
+      { text: "Train up a child in the way he should go; even when he is old he will not depart from it.", attribution: "Proverbs 22:6, ESV" },
+      { text: "We are what we repeatedly do. Excellence, then, is not an act, but a habit.", attribution: "Will Durant" },
+      { text: "Far better it is to dare mighty things, to win glorious triumphs, even though checkered by failure, than to take rank with those poor spirits who neither enjoy much nor suffer much, because they live in the gray twilight that knows neither victory nor defeat.", attribution: "Theodore Roosevelt" },
+      { text: "The world is changed by your example, not by your opinion.", attribution: "Paulo Coelho" },
+      { text: "I have fought the good fight, I have finished the race, I have kept the faith.", attribution: "2 Timothy 4:7, ESV" },
+      { text: "The test of our progress is not whether we add more to the abundance of those who have much; it is whether we provide enough for those who have too little.", attribution: "Franklin D. Roosevelt" },
+      { text: "When everything seems to be going against you, remember that the airplane takes off against the wind, not with it.", attribution: "Henry Ford" },
+      { text: "Have I not commanded you? Be strong and courageous. Do not be frightened, and do not be dismayed, for the Lord your God is with you wherever you go.", attribution: "Joshua 1:9, ESV" },
+      { text: "The things that will destroy America are prosperity at any price, peace at any price, safety first instead of duty first, the love of soft living, and the get-rich-quick theory of life.", attribution: "Theodore Roosevelt" },
+      { text: "First say to yourself what you would be; and then do what you have to do.", attribution: "Epictetus" },
+      { text: "The discipline of desire is the background of character.", attribution: "John Locke" },
+      { text: "And let us not grow weary of doing good, for in due season we will reap, if we do not give up.", attribution: "Galatians 6:9, ESV" },
+      { text: "Uncommon men require no common trust. Give me a man I can trust and I will give him everything I have.", attribution: "Chesty Puller" },
+      { text: "We didn\u2019t inherit this land from our fathers. We are borrowing it from our children.", attribution: "Amish Proverb" },
+      { text: "The secret of getting ahead is getting started.", attribution: "Mark Twain" },
     ]
   };
 
@@ -959,45 +971,26 @@
 
   function renderQuote() {
     const quotes = CONFIG.quotes;
-    // Pick a quote based on the day of year so it's stable for a full day
-    // but rotates daily
-    const dayOfYear = Math.floor(
-      (Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000
-    );
-    const index = dayOfYear % quotes.length;
+    // Rotate every hour: hours since epoch mod quote count
+    const hoursSinceEpoch = Math.floor(Date.now() / 3600000);
+    const index = hoursSinceEpoch % quotes.length;
     const quote = quotes[index];
 
     const textEl = document.getElementById('quoteText');
     const attrEl = document.getElementById('quoteAttribution');
 
     textEl.textContent = '\u201C' + quote.text + '\u201D';
-
-    if (quote.type === 'famous' && quote.attribution) {
-      attrEl.textContent = quote.attribution;
-      attrEl.className = 'quote-attribution';
-    } else {
-      // Original lines get a different treatment
-      attrEl.textContent = '';
-      attrEl.className = 'quote-attribution original';
-    }
-  }
-
-  function handleSignup() {
-    const email = document.getElementById('emailInput').value;
-    if (!email || !email.includes('@')) return;
-
-    // TODO: Wire to email service (ConvertKit, Buttondown, etc.)
-    // For now, just show the success message
-    console.log('Signup:', email);
-
-    document.getElementById('signupForm').style.display = 'none';
-    document.getElementById('signupSuccess').style.display = 'block';
+    attrEl.textContent = quote.attribution;
+    attrEl.className = 'quote-attribution';
   }
 
   // Allow Enter key to submit
   document.addEventListener('DOMContentLoaded', () => {
     renderDebt();
     renderQuote();
+
+    // Refresh quote every hour without page reload
+    setInterval(renderQuote, 3600000);
 
     document.getElementById('emailInput').addEventListener('keydown', (e) => {
       if (e.key === 'Enter') handleSignup();
